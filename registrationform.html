@@ -375,7 +375,6 @@
                 const formData = new FormData(form);
 
                 try {
-                    // NOTE: This fetch call is simulating submission to a backend.
                     const response = await fetch('/submit-form', {
                         method: 'POST',
                         body: formData // Correctly sends files and form data
