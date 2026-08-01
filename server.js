@@ -96,18 +96,31 @@ app.get('/admin', (req, res) => {
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 
 
-// 3. MONGODB CONNECTION
-const mongoUri = process.env.MONGODB_URI
+// 3. MONGODB CONNECTION (Serverless Optimized)
+const mongoUri = process.env.MONGODB_URI;
 
-mongoose.connect(mongoUri)
-    .then(() => {
+async function connectDB() {
+    if (mongoose.connection.readyState === 1) {
+        return;
+    }
+    try {
+        await mongoose.connect(mongoUri, {
+            serverSelectionTimeoutMS: 5000 // Fail fast if DB is unreachable
+        });
         console.log('✅ MongoDB connected successfully.');
-    })
-    .catch(err => {
+    } catch (err) {
         console.error('❌ MongoDB connection error:', err);
-        console.log('⚠️ WARNING: DB connection failed, but server will continue to start.');
-    });
-// 4. MONGODB SCHEMAS AND MODELS
+    }
+}
+
+// Ensure connection helper runs before handling API routes
+app.use(async (req, res, next) => {
+    if (mongoose.connection.readyState !== 1) {
+        await connectDB();
+    }
+    next();
+});
+
 
 // --- Admin User Schema and Model (NEW) ---
 const AdminUserSchema = new mongoose.Schema({
@@ -206,14 +219,13 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 app.post('/api/auth/login', async (req, res) => {
-    if (mongoose.connection.readyState !== 1) {
-        return res.status(503).json({ message: "Database not connected" });
-    }
-    
-    // ✨ FIX: Destructure email and password from req.body
-    const { email, password } = req.body;
-
     try {
+        if (mongoose.connection.readyState !== 1) {
+            await connectDB();
+        }
+        
+        const { email, password } = req.body;
+
         const user = await AdminUser.findOne({ email });
 
         if (!user) {

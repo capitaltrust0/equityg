@@ -59,6 +59,7 @@
 
             <div id="auth-forms">
 
+                <!-- Login Form -->
                 <form id="login-form">
                     <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800">Sign In</h2>
                     
@@ -71,9 +72,14 @@
 
                     <div class="mb-6">
                         <label for="login-password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input type="password" id="login-password" name="password" required
-                               placeholder="********"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus-ring-primary transition duration-200">
+                        <div class="relative">
+                            <input type="password" id="login-password" name="password" required
+                                   placeholder="********"
+                                   class="w-full px-4 py-3 pr-16 border border-gray-300 rounded-lg focus-ring-primary transition duration-200">
+                            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-xs font-semibold text-gray-600 hover:text-gray-800 focus:outline-none">
+                                Show
+                            </button>
+                        </div>
                     </div>
 
                     <button type="submit" 
@@ -82,6 +88,7 @@
                     </button>
                 </form>
 
+                <!-- Register Form -->
                 <form id="register-form" class="hidden"> 
                     <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800">Create Admin Account</h2>
                     
@@ -93,14 +100,24 @@
 
                     <div class="mb-4">
                         <label for="register-password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                        <input type="password" id="register-password" name="password" required placeholder="********"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus-ring-primary transition duration-200">
+                        <div class="relative">
+                            <input type="password" id="register-password" name="password" required placeholder="********"
+                                   class="w-full px-4 py-3 pr-16 border border-gray-300 rounded-lg focus-ring-primary transition duration-200">
+                            <button type="button" onclick="togglePasswordVisibility('register-password', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-xs font-semibold text-gray-600 hover:text-gray-800 focus:outline-none">
+                                Show
+                            </button>
+                        </div>
                     </div>
                     
                     <div class="mb-6">
                         <label for="register-confirm-password" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-                        <input type="password" id="register-confirm-password" name="confirm_password" required placeholder="********"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus-ring-primary transition duration-200">
+                        <div class="relative">
+                            <input type="password" id="register-confirm-password" name="confirm_password" required placeholder="********"
+                                   class="w-full px-4 py-3 pr-16 border border-gray-300 rounded-lg focus-ring-primary transition duration-200">
+                            <button type="button" onclick="togglePasswordVisibility('register-confirm-password', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-xs font-semibold text-gray-600 hover:text-gray-800 focus:outline-none">
+                                Show
+                            </button>
+                        </div>
                     </div>
 
                     <button type="submit" 
@@ -109,6 +126,7 @@
                     </button>
                 </form>
 
+                <!-- Forgot Password Form -->
                 <form id="forgot-password-form" class="hidden">
                     <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800">Password Reset</h2>
                     
@@ -173,41 +191,46 @@
             if (type === 'success') {
                 messageContainer.classList.add('bg-green-100', 'text-green-800', 'border-green-400');
             } else {
-                // Default to error/warning styling
                 messageContainer.classList.add('bg-red-100', 'text-red-800', 'border-red-400');
             }
             messageContainer.classList.remove('hidden');
 
-            // Hide the message after 5 seconds
             setTimeout(() => {
                 messageContainer.classList.add('hidden');
             }, 5000);
         }
 
+        // Toggle Password Visibility Function
+        window.togglePasswordVisibility = function(fieldId, buttonElement) {
+            const passwordInput = document.getElementById(fieldId);
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                buttonElement.textContent = 'Hide';
+            } else {
+                passwordInput.type = 'password';
+                buttonElement.textContent = 'Show';
+            }
+        }
+
         // Utility function to toggle form visibility
-        window.showForm = function(formName) { // Expose to global scope for onclick attributes
-            // Clear any lingering messages
+        window.showForm = function(formName) {
             messageContainer.classList.add('hidden');
             
-            // Define all form IDs and link container IDs
             const formIds = ['login-form', 'register-form', 'forgot-password-form'];
             const linkIds = ['login-links', 'register-links', 'forgot-password-links'];
             
-            // Determine the target form and link containers
             const targetFormId = formName + '-form';
             const targetLinkId = formName + '-links';
 
-            // Hide all forms and links
             formIds.forEach(id => document.getElementById(id).classList.add('hidden'));
             linkIds.forEach(id => document.getElementById(id).classList.add('hidden'));
 
-            // Show the requested form and its corresponding links
             const targetForm = document.getElementById(targetFormId);
             const targetLinks = document.getElementById(targetLinkId);
 
             if (targetForm) {
                 targetForm.classList.remove('hidden');
-                targetForm.reset(); // Clear form fields
+                targetForm.reset(); 
             }
             if (targetLinks) {
                 targetLinks.classList.remove('hidden');
@@ -230,15 +253,10 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Successful login
                     localStorage.setItem('adminToken', data.token);
                     displayMessage('Login successful! Redirecting to dashboard...', 'success');
-                    
-                    // Redirect after short delay
                     setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 1500); 
-
                 } else {
-                    // Login failed
                     displayMessage(data.message || 'Login failed. Please check your credentials.');
                 }
             } catch (error) {
@@ -267,15 +285,10 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Successful registration
                     localStorage.setItem('adminToken', data.token);
                     displayMessage('Account created! Logging in...', 'success');
-                    
-                    // Redirect after short delay
                     setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 1500); 
-
                 } else {
-                    // Registration failed
                     displayMessage(data.message || 'Registration failed. The email might already be in use.');
                 }
             } catch (error) {
@@ -297,10 +310,8 @@
 
                 const data = await response.json();
 
-                // The backend returns a generic success message for security
                 if (response.ok) {
                     displayMessage(data.message || "If an account exists, a reset link has been sent.", 'success');
-                    // Switch back to login after receiving the success message
                     setTimeout(() => showForm('login'), 3000);
                 } else {
                     displayMessage(data.message || 'Failed to process reset request.');
