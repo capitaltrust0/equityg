@@ -209,6 +209,10 @@ app.post('/api/auth/login', async (req, res) => {
     if (mongoose.connection.readyState !== 1) {
         return res.status(503).json({ message: "Database not connected" });
     }
+    
+    // ✨ FIX: Destructure email and password from req.body
+    const { email, password } = req.body;
+
     try {
         const user = await AdminUser.findOne({ email });
 
